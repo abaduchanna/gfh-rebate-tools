@@ -2,3 +2,5 @@ pillow
 openpyxl
 pywin32
 xlrd
+xlwt
+xlutils
