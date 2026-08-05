@@ -30,22 +30,30 @@ from datetime import datetime
 
 # ── Auto-install required packages BEFORE importing them ──────────────────
 def _pip_install(pkg_name):
+    # Never pip-install from inside a frozen EXE: all deps are bundled by
+    # PyInstaller, and re-launching sys.executable would spawn another
+    # instance of the app itself (window flooding).
+    if getattr(sys, "frozen", False):
+        return
     subprocess.run(
         [sys.executable, "-m", "pip", "install", pkg_name,
          "--quiet", "--disable-pip-version-check"],
         capture_output=True,
     )
 
-for _pkg, _pip in [
+# Check each dependency by its real import module name (pywin32 -> win32com,
+# pillow -> PIL), not the pip package name, so this only runs pip when a
+# package is genuinely missing.
+for _mod, _pip in [
     ("openpyxl",  "openpyxl"),
     ("xlrd",      "xlrd==1.2.0"),
     ("xlwt",      "xlwt"),
     ("xlutils",   "xlutils"),
-    ("pywin32",   "pywin32"),
-    ("pillow",    "pillow"),
+    ("win32com",  "pywin32"),
+    ("PIL",       "pillow"),
 ]:
     try:
-        __import__(_pkg.split(".")[0])
+        __import__(_mod)
     except ImportError:
         _pip_install(_pip)
 
