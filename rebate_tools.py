@@ -578,7 +578,7 @@ class App:
         tk.Label(tf, text="Rename · Suffix · Delete 2025 · Convert Legacy Excel",
                  font=("Calibri", 9), fg=WHITE, bg=NAVY).pack()
 
-        theme_btn = create_theme_toggle_button(hdr, self.theme_manager)
+        theme_btn = create_theme_toggle_button(hdr, self.theme_manager, on_toggle=self._apply_theme)
         theme_btn.place(relx=0.98, rely=0.5, anchor="e")
 
     def _apply_theme(self, colors=None):
