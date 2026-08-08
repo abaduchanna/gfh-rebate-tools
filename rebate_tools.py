@@ -546,6 +546,9 @@ class App:
         hdr.pack_propagate(False)
         hdr._tag = "header"
 
+
+        hdr.bind("<Enter>", lambda e, w=hdr: w.configure(bg=NAVY))
+        hdr.bind("<Leave>", lambda e, w=hdr: w.configure(bg=NAVY))
         # Logo on the left — load GFH_Telecom_Logo.png next to this script,
         # composite on NAVY (so transparent regions render correctly), and
         # thumbnail to 260x82 (same recipe as the Aging Processor).
