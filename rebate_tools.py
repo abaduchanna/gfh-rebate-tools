@@ -482,7 +482,7 @@ class App:
         self._running = False
         self._logo_img = None
 
-        root.title("GFH Telecom — Rebate Folder Tools")
+        root.title("GFH Telecom - Rebate Tools")
         # Dynamic screen resolution support: size to 90% of the screen and
         # center it (DPI-aware), then stay a normal resizable top-level so
         # Windows Snap (50% left/right, corners, Win+arrow) keeps working.
@@ -822,6 +822,10 @@ if __name__ == "__main__":
     _enable_dpi_awareness()
     try:
         root = tk.Tk()
+try:
+    root.iconbitmap("GFH_Telecom_TBLogo.ico")
+except:
+    pass  # Icon file not found
         App(root)
         root.mainloop()
     except Exception:
