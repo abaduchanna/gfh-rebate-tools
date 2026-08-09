@@ -830,10 +830,6 @@ if __name__ == "__main__":
     _enable_dpi_awareness()
     try:
         root = tk.Tk()
-try:
-    root.iconbitmap("gfh_icon_white.ico")
-except:
-    pass  # Icon file not found
         App(root)
         root.mainloop()
     except Exception:
