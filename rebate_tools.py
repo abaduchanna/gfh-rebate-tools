@@ -146,7 +146,6 @@ def _set_window_icon(root):
         if os.path.exists(ico_path):
             try:
                 root.iconbitmap(ico_path)
-                root.iconbitmap(ico_path)
                 return
             except Exception:
                 pass
@@ -160,7 +159,6 @@ def _set_window_icon(root):
     if os.path.exists(ico_path):
         try:
             root.iconbitmap(ico_path)
-            root.iconbitmap(ico_path)
             return
         except Exception:
             pass
@@ -172,7 +170,6 @@ def _set_window_icon(root):
         ico_path = os.path.join(tmp_dir, "gfh_app_icon.ico")
         with open(ico_path, "wb") as f:
             f.write(data)
-        root.iconbitmap(ico_path)
         root.iconbitmap(ico_path)
         return
     except Exception:
@@ -491,12 +488,15 @@ class App:
         self._logo_img = None
 
         root.title("GFH Telecom - Rebate Tools")
+        # Set the window icon BEFORE _apply_dynamic_geometry() — that method
+        # calls update_idletasks() which realizes the window, and the icon
+        # must be set before realization or the taskbar/titlebar icon is lost.
+        _set_window_icon(root)
         # Dynamic screen resolution support: size to 90% of the screen and
         # center it (DPI-aware), then stay a normal resizable top-level so
         # Windows Snap (50% left/right, corners, Win+arrow) keeps working.
         self._apply_dynamic_geometry()
         root.configure(bg=LIGHT)
-        _set_window_icon(root)
 
         self.theme_manager = ThemeManager("GFH Rebate Folder Tools")
         self._styles()
@@ -809,9 +809,10 @@ def _enable_dpi_awareness() -> None:
         return
     try:
         import ctypes
-        # Set AppUserModelID BEFORE any window is created
+        # Set AppUserModelID BEFORE any window is created — must be UNIQUE
+        # per app or Windows caches a generic/shared taskbar icon.
         try:
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("GFHTelecom.App")
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("GFHTelecom.RebateTools")
         except Exception:
             pass
         try:
