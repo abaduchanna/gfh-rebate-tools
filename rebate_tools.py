@@ -139,22 +139,13 @@ def _set_window_icon(root):
     """Set taskbar + titlebar icon from embedded base64 ICO."""
     import base64, tempfile, atexit, os, sys
 
-    # Set AppUserModelID AGAIN after Tk creation (before window is shown).
-    # This must be set both BEFORE Tk (in _enable_dpi_awareness) and AFTER
-    # Tk creation but BEFORE the window is realized — Windows needs both
-    # for the taskbar to show the correct icon.
-    try:
-        import ctypes
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("GFHTelecom.RebateTools")
-    except Exception:
-        pass
-
     # 1. Try sys._MEIPASS (PyInstaller onefile extraction dir)
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass:
         ico_path = os.path.join(meipass, "gfh_icon_white.ico")
         if os.path.exists(ico_path):
             try:
+                root.iconbitmap(ico_path)
                 root.iconbitmap(ico_path)
                 return
             except Exception:
@@ -169,6 +160,7 @@ def _set_window_icon(root):
     if os.path.exists(ico_path):
         try:
             root.iconbitmap(ico_path)
+            root.iconbitmap(ico_path)
             return
         except Exception:
             pass
@@ -180,6 +172,7 @@ def _set_window_icon(root):
         ico_path = os.path.join(tmp_dir, "gfh_app_icon.ico")
         with open(ico_path, "wb") as f:
             f.write(data)
+        root.iconbitmap(ico_path)
         root.iconbitmap(ico_path)
         return
     except Exception:
@@ -498,15 +491,21 @@ class App:
         self._logo_img = None
 
         root.title("GFH Telecom - Rebate Tools")
-        # Set the window icon BEFORE _apply_dynamic_geometry() — that method
-        # calls update_idletasks() which realizes the window, and the icon
-        # must be set before realization or the taskbar/titlebar icon is lost.
-        _set_window_icon(root)
         # Dynamic screen resolution support: size to 90% of the screen and
         # center it (DPI-aware), then stay a normal resizable top-level so
         # Windows Snap (50% left/right, corners, Win+arrow) keeps working.
         self._apply_dynamic_geometry()
         root.configure(bg=LIGHT)
+        # Brute-force taskbar icon: set AppUserModelID so Windows taskbar
+        # shows our icon instead of the generic Python/PyInstaller icon
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "GFHTelecom.App")
+        except Exception:
+            pass
+
+        _set_window_icon(root)
 
         self.theme_manager = ThemeManager("GFH Rebate Folder Tools")
         self._styles()
@@ -819,10 +818,9 @@ def _enable_dpi_awareness() -> None:
         return
     try:
         import ctypes
-        # Set AppUserModelID BEFORE any window is created — must be UNIQUE
-        # per app or Windows caches a generic/shared taskbar icon.
+        # Set AppUserModelID BEFORE any window is created
         try:
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("GFHTelecom.RebateTools")
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("GFHTelecom.App")
         except Exception:
             pass
         try:
