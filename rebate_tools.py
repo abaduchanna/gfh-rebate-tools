@@ -152,59 +152,87 @@ def _set_window_icon(root):
     except Exception as e:
         _dbg = [f"DEBUG INIT ERROR: {e}"]
 
-    # 1. Try sys._MEIPASS (PyInstaller onefile extraction dir)
+    # Resolve the .ico path (try _MEIPASS, then exe-dir, then %TEMP% decode)
+    _ico_path = None
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass:
-        ico_path = os.path.join(meipass, "gfh_icon_white.ico")
-        _dbg.append(f"[1] _MEIPASS ico_path={ico_path} exists={os.path.exists(ico_path)}")
-        if os.path.exists(ico_path):
-            try:
-                root.iconbitmap(ico_path)
-                root.iconbitmap(ico_path)
-                _dbg.append(f"[1] iconbitmap OK — returning")
-                _write_debug_log(_dbg)
-                return
-            except Exception as e:
-                _dbg.append(f"[1] iconbitmap FAILED: {e}")
+        _p = os.path.join(meipass, "gfh_icon_white.ico")
+        _dbg.append(f"[1] _MEIPASS ico_path={_p} exists={os.path.exists(_p)}")
+        if os.path.exists(_p):
+            _ico_path = _p
+    if not _ico_path:
+        if getattr(sys, "frozen", False):
+            base_dir = os.path.dirname(sys.executable)
         else:
-            _dbg.append(f"[1] ico not found in _MEIPASS")
-
-    # 2. Try next to the exe/script
-    if getattr(sys, "frozen", False):
-        base_dir = os.path.dirname(sys.executable)
-    else:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-    ico_path = os.path.join(base_dir, "gfh_icon_white.ico")
-    _dbg.append(f"[2] exe-dir ico_path={ico_path} exists={os.path.exists(ico_path)}")
-    if os.path.exists(ico_path):
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+        _p = os.path.join(base_dir, "gfh_icon_white.ico")
+        _dbg.append(f"[2] exe-dir ico_path={_p} exists={os.path.exists(_p)}")
+        if os.path.exists(_p):
+            _ico_path = _p
+    if not _ico_path:
         try:
-            root.iconbitmap(ico_path)
-            root.iconbitmap(ico_path)
-            _dbg.append(f"[2] iconbitmap OK — returning")
-            _write_debug_log(_dbg)
-            return
+            data = base64.b64decode(EMBEDDED_ICON_B64.strip())
+            tmp_dir = os.environ.get("TEMP", tempfile.gettempdir())
+            _p = os.path.join(tmp_dir, "gfh_app_icon.ico")
+            with open(_p, "wb") as f:
+                f.write(data)
+            _dbg.append(f"[3] decoded to {_p} size={len(data)}")
+            _ico_path = _p
         except Exception as e:
-            _dbg.append(f"[2] iconbitmap FAILED: {e}")
-    else:
-        _dbg.append(f"[2] ico not found next to exe")
+            _dbg.append(f"[3] FAILED: {e}")
 
-    # 3. Decode EMBEDDED_ICON_B64 to %TEMP% (no spaces, always writable)
-    try:
-        data = base64.b64decode(EMBEDDED_ICON_B64.strip())
-        tmp_dir = os.environ.get("TEMP", tempfile.gettempdir())
-        ico_path = os.path.join(tmp_dir, "gfh_app_icon.ico")
-        with open(ico_path, "wb") as f:
-            f.write(data)
-        _dbg.append(f"[3] decoded to {ico_path} size={len(data)}")
-        root.iconbitmap(ico_path)
-        root.iconbitmap(ico_path)
-        _dbg.append(f"[3] iconbitmap OK — returning")
+    if not _ico_path:
+        _dbg.append(f"!!! NO ICON PATH RESOLVED !!!")
         _write_debug_log(_dbg)
         return
-    except Exception as e:
-        _dbg.append(f"[3] FAILED: {e}")
 
-    _dbg.append(f"!!! NO ICON PATH SUCCEEDED !!!")
+    # 1. Tkinter iconbitmap (sets titlebar + class icon)
+    try:
+        root.iconbitmap(_ico_path)
+        root.iconbitmap(_ico_path)
+        _dbg.append(f"[A] iconbitmap OK")
+    except Exception as e:
+        _dbg.append(f"[A] iconbitmap FAILED: {e}")
+
+    # 2. ALSO set via Windows API directly (forces taskbar icon via HWND)
+    # This is the brute-force method that bypasses Tkinter limitations.
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        # Load the .ico as a Windows icon handle (HICON)
+        # LoadImage with LR_LOADFROMFILE loads an .ico file
+        IMAGE_ICON = 1
+        LR_LOADFROMFILE = 0x00000010
+        LR_DEFAULTSIZE = 0x00000040
+
+        user32 = ctypes.windll.user32
+        _hicon_big = user32.LoadImageW(
+            0, _ico_path, IMAGE_ICON,
+            0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE)
+        _hicon_small = user32.LoadImageW(
+            0, _ico_path, IMAGE_ICON,
+            16, 16, LR_LOADFROMFILE)
+
+        if _hicon_big or _hicon_small:
+            root.update_idletasks()  # ensure HWND exists
+            _hwnd = root.winfo_id()
+
+            WM_SETICON = 0x0080
+            ICON_BIG = 1
+            ICON_SMALL = 0
+
+            if _hicon_big:
+                user32.SendMessageW(_hwnd, WM_SETICON, ICON_BIG, _hicon_big)
+                _dbg.append(f"[B] WM_SETICON ICON_BIG OK hwnd={_hwnd} hicon={_hicon_big}")
+            if _hicon_small:
+                user32.SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, _hicon_small)
+                _dbg.append(f"[B] WM_SETICON ICON_SMALL OK hwnd={_hwnd} hicon={_hicon_small}")
+        else:
+            _dbg.append(f"[B] LoadImageW returned 0 — .ico load failed")
+    except Exception as e:
+        _dbg.append(f"[B] Windows API icon set FAILED: {e}")
+
     _write_debug_log(_dbg)
 
 
