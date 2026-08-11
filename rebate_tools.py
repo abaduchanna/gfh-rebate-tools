@@ -200,13 +200,12 @@ def _set_window_icon(root):
         import ctypes
         from ctypes import wintypes
 
-        # Load the .ico as a Windows icon handle (HICON)
-        # LoadImage with LR_LOADFROMFILE loads an .ico file
         IMAGE_ICON = 1
         LR_LOADFROMFILE = 0x00000010
         LR_DEFAULTSIZE = 0x00000040
 
         user32 = ctypes.windll.user32
+
         _hicon_big = user32.LoadImageW(
             0, _ico_path, IMAGE_ICON,
             0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE)
@@ -216,18 +215,30 @@ def _set_window_icon(root):
 
         if _hicon_big or _hicon_small:
             root.update_idletasks()  # ensure HWND exists
-            _hwnd = root.winfo_id()
+
+            # CRITICAL: root.winfo_id() returns the CHILD window HWND.
+            # The taskbar tracks the PARENT (top-level) window.
+            # Use GetParent() to get the real top-level HWND.
+            _child_hwnd = root.winfo_id()
+            _toplevel_hwnd = user32.GetParent(_child_hwnd)
+            _dbg.append(f"[B] child_hwnd={_child_hwnd} toplevel_hwnd={_toplevel_hwnd}")
 
             WM_SETICON = 0x0080
             ICON_BIG = 1
             ICON_SMALL = 0
 
-            if _hicon_big:
-                user32.SendMessageW(_hwnd, WM_SETICON, ICON_BIG, _hicon_big)
-                _dbg.append(f"[B] WM_SETICON ICON_BIG OK hwnd={_hwnd} hicon={_hicon_big}")
-            if _hicon_small:
-                user32.SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, _hicon_small)
-                _dbg.append(f"[B] WM_SETICON ICON_SMALL OK hwnd={_hwnd} hicon={_hicon_small}")
+            # Send WM_SETICON to BOTH the child and the top-level window
+            # to cover all cases (some Windows builds use one, some the other)
+            _targets = [_toplevel_hwnd, _child_hwnd]
+            for _hwnd in _targets:
+                if not _hwnd:
+                    continue
+                if _hicon_big:
+                    user32.SendMessageW(_hwnd, WM_SETICON, ICON_BIG, _hicon_big)
+                    _dbg.append(f"[B] WM_SETICON ICON_BIG -> hwnd={_hwnd} hicon={_hicon_big}")
+                if _hicon_small:
+                    user32.SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, _hicon_small)
+                    _dbg.append(f"[B] WM_SETICON ICON_SMALL -> hwnd={_hwnd} hicon={_hicon_small}")
         else:
             _dbg.append(f"[B] LoadImageW returned 0 — .ico load failed")
     except Exception as e:
