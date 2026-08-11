@@ -139,124 +139,45 @@ def _set_window_icon(root):
     """Set taskbar + titlebar icon from embedded base64 ICO."""
     import base64, tempfile, atexit, os, sys
 
-    # DEBUG: Write icon diagnostic log to %TEMP%
-    try:
-        _dbg = []
-        _dbg.append(f"=== ICON DEBUG {__file__} ===")
-        _dbg.append(f"sys.platform={sys.platform}")
-        _dbg.append(f"sys.frozen={getattr(sys, 'frozen', False)}")
-        _dbg.append(f"sys._MEIPASS={getattr(sys, '_MEIPASS', None)}")
-        _dbg.append(f"sys.executable={sys.executable}")
-        _dbg.append(f"AppUserModelID already set in _enable_dpi_awareness")
-        _dbg.append(f"EMBEDDED_ICON_B64 length={len(EMBEDDED_ICON_B64)}")
-    except Exception as e:
-        _dbg = [f"DEBUG INIT ERROR: {e}"]
-
-    # Resolve the .ico path (try _MEIPASS, then exe-dir, then %TEMP% decode)
-    _ico_path = None
+    # 1. Try sys._MEIPASS (PyInstaller onefile extraction dir)
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass:
-        _p = os.path.join(meipass, "gfh_app_icon_new.ico")
-        _dbg.append(f"[1] _MEIPASS ico_path={_p} exists={os.path.exists(_p)}")
-        if os.path.exists(_p):
-            _ico_path = _p
-    if not _ico_path:
-        if getattr(sys, "frozen", False):
-            base_dir = os.path.dirname(sys.executable)
-        else:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-        _p = os.path.join(base_dir, "gfh_app_icon_new.ico")
-        _dbg.append(f"[2] exe-dir ico_path={_p} exists={os.path.exists(_p)}")
-        if os.path.exists(_p):
-            _ico_path = _p
-    if not _ico_path:
+        ico_path = os.path.join(meipass, "gfh_app_icon_new.ico")
+        if os.path.exists(ico_path):
+            try:
+                root.iconbitmap(ico_path)
+                root.iconbitmap(ico_path)
+                return
+            except Exception:
+                pass
+
+    # 2. Try next to the exe/script
+    if getattr(sys, "frozen", False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    ico_path = os.path.join(base_dir, "gfh_app_icon_new.ico")
+    if os.path.exists(ico_path):
         try:
-            data = base64.b64decode(EMBEDDED_ICON_B64.strip())
-            tmp_dir = os.environ.get("TEMP", tempfile.gettempdir())
-            _p = os.path.join(tmp_dir, "gfh_app_icon.ico")
-            with open(_p, "wb") as f:
-                f.write(data)
-            _dbg.append(f"[3] decoded to {_p} size={len(data)}")
-            _ico_path = _p
-        except Exception as e:
-            _dbg.append(f"[3] FAILED: {e}")
+            root.iconbitmap(ico_path)
+            root.iconbitmap(ico_path)
+            return
+        except Exception:
+            pass
 
-    if not _ico_path:
-        _dbg.append(f"!!! NO ICON PATH RESOLVED !!!")
-        _write_debug_log(_dbg)
+    # 3. Decode EMBEDDED_ICON_B64 to %TEMP% (no spaces, always writable)
+    try:
+        data = base64.b64decode(EMBEDDED_ICON_B64.strip())
+        tmp_dir = os.environ.get("TEMP", tempfile.gettempdir())
+        ico_path = os.path.join(tmp_dir, "gfh_app_icon.ico")
+        with open(ico_path, "wb") as f:
+            f.write(data)
+        root.iconbitmap(ico_path)
+        root.iconbitmap(ico_path)
         return
-
-    # 1. Tkinter iconbitmap (sets titlebar + class icon)
-    try:
-        root.iconbitmap(_ico_path)
-        root.iconbitmap(_ico_path)
-        _dbg.append(f"[A] iconbitmap OK")
-    except Exception as e:
-        _dbg.append(f"[A] iconbitmap FAILED: {e}")
-
-    # 2. ALSO set via Windows API directly (forces taskbar icon via HWND)
-    # This is the brute-force method that bypasses Tkinter limitations.
-    try:
-        import ctypes
-        from ctypes import wintypes
-
-        IMAGE_ICON = 1
-        LR_LOADFROMFILE = 0x00000010
-        LR_DEFAULTSIZE = 0x00000040
-
-        user32 = ctypes.windll.user32
-
-        _hicon_big = user32.LoadImageW(
-            0, _ico_path, IMAGE_ICON,
-            0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE)
-        _hicon_small = user32.LoadImageW(
-            0, _ico_path, IMAGE_ICON,
-            16, 16, LR_LOADFROMFILE)
-
-        if _hicon_big or _hicon_small:
-            root.update_idletasks()  # ensure HWND exists
-
-            # CRITICAL: root.winfo_id() returns the CHILD window HWND.
-            # The taskbar tracks the PARENT (top-level) window.
-            # Use GetParent() to get the real top-level HWND.
-            _child_hwnd = root.winfo_id()
-            _toplevel_hwnd = user32.GetParent(_child_hwnd)
-            _dbg.append(f"[B] child_hwnd={_child_hwnd} toplevel_hwnd={_toplevel_hwnd}")
-
-            WM_SETICON = 0x0080
-            ICON_BIG = 1
-            ICON_SMALL = 0
-
-            # Send WM_SETICON to BOTH the child and the top-level window
-            # to cover all cases (some Windows builds use one, some the other)
-            _targets = [_toplevel_hwnd, _child_hwnd]
-            for _hwnd in _targets:
-                if not _hwnd:
-                    continue
-                if _hicon_big:
-                    user32.SendMessageW(_hwnd, WM_SETICON, ICON_BIG, _hicon_big)
-                    _dbg.append(f"[B] WM_SETICON ICON_BIG -> hwnd={_hwnd} hicon={_hicon_big}")
-                if _hicon_small:
-                    user32.SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, _hicon_small)
-                    _dbg.append(f"[B] WM_SETICON ICON_SMALL -> hwnd={_hwnd} hicon={_hicon_small}")
-        else:
-            _dbg.append(f"[B] LoadImageW returned 0 — .ico load failed")
-    except Exception as e:
-        _dbg.append(f"[B] Windows API icon set FAILED: {e}")
-
-    _write_debug_log(_dbg)
-
-
-def _write_debug_log(lines):
-    """Write debug log to %TEMP% so we can see what happened at runtime."""
-    try:
-        import os, tempfile
-        log_path = os.path.join(os.environ.get("TEMP", tempfile.gettempdir()),
-                                "gfh_icon_debug.txt")
-        with open(log_path, "w") as f:
-            f.write("\n".join(lines) + "\n")
     except Exception:
         pass
+
 
 
 def step1_store_rename(folder: Path, log):
