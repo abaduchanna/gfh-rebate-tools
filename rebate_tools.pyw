@@ -53,10 +53,22 @@ try:
 except ImportError:
     xlrd = xlwt = xl_copy = None
 
-try:
-    import win32com.client
-except ImportError:
-    win32com = None
+# win32com removed - not needed for basic rebate tools
+
+# ── LOGO HANDLER ──
+def load_header_logo():
+    """Load GFH logo for header"""
+    logo_files = ["GFH_Telecom_Logo.png", "logo.png", "gfh_logo.png"]
+    for logo_file in logo_files:
+        if Path(logo_file).exists():
+            try:
+                from PIL import Image
+                img = Image.open(logo_file)
+                img.thumbnail((100, 50), Image.Resampling.LANCZOS)
+                return img
+            except Exception:
+                pass
+    return None
 
 # ═══════════════════════════════════════════════════════════════════════════
 # GFH BRANDING & CONSTANTS
