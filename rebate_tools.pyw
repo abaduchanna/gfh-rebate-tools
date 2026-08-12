@@ -328,11 +328,22 @@ class RebateToolsApp:
             pass
         
         self.stores_config = StoreConfigManager.load()
+        self.is_dark = True
         self.folder_path = None
         self.log_queue = []
         
         self.build_ui()
     
+
+    def toggle_theme(self):
+        """Toggle between light and dark theme"""
+        self.is_dark = not self.is_dark
+        if self.is_dark:
+            self.root.configure(bg=BRAND_NAVY)
+        else:
+            self.root.configure(bg=BRAND_LIGHT_BG)
+        self.log(f"✓ Theme: {'Dark' if self.is_dark else 'Light'}")
+
     def build_ui(self):
         """Build the main UI"""
         # Header
