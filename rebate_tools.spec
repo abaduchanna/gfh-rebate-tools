@@ -16,8 +16,6 @@ a = Analysis(
     binaries=[],
     datas=[
         ('GFH_Telecom_Logo.png', '.'),
-        ('gfh_app_icon_new.ico', '.'),
-        ('gfh_icon.ico', '.'),
         ('gfh_icon.png', '.'),
         ('gfh_wordmark.png', '.'),
         ('stores.json', '.'),
