@@ -15,6 +15,7 @@ a = Analysis(
     pathex=['.'],
     binaries=[],
     datas=[
+        ('assets', 'assets'),
         ('GFH_Telecom_Logo.png', '.'),
         ('gfh_icon.png', '.'),
         ('gfh_wordmark.png', '.'),
