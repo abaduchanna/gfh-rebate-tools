@@ -12,13 +12,16 @@ block_cipher = None
 
 a = Analysis(
     ['rebate_tools.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
     datas=[
         ('gfh_icon.ico', '.'),
         ('gfh_icon.png', '.'),
         ('gfh_wordmark.png', '.'),
         ('stores.json', '.'),
+        ('theme_manager.py', '.'),
+        ('logo_handler.py', '.'),
+        ('header_manager.py', '.'),
     ],
     hiddenimports=[
         'tkinter',
