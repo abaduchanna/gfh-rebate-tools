@@ -8,22 +8,7 @@ Complete rebate processing suite with:
   • XLS to XLSX conversion
   • Professional UI with tabs, logging, and GFH branding
 
-Developed by Abad Umair Channa © 2026
-"""
-
-import os
-import sys
-import json
-import subprocess
-import tkinter as tk
-from tkinter import ttk, filedialog, scrolledtext, messagebox
-from pathlib import Path
-import threading
-import re
-
-# ── Auto-install required packages ──────────────────────────────────────────
-def _pip_install(pkg_name):
-    subprocess.run(
+Developed by Abad Umair Channa | Copyright © 2026 | All rights reserved.run(
         [sys.executable, "-m", "pip", "install", pkg_name, "--quiet", "--disable-pip-version-check"],
         capture_output=True,
     )
