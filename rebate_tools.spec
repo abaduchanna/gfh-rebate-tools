@@ -18,6 +18,7 @@ a = Analysis(
         ('gfh_icon.ico', '.'),
         ('gfh_icon.png', '.'),
         ('gfh_wordmark.png', '.'),
+        ('stores.json', '.'),
     ],
     hiddenimports=[
         'tkinter',
