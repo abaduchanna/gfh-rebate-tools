@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-GFH Rebate Tools Suite - Unified Interface
-==========================================
-Integrated workflow for rebate processing:
-  1. Configure/manage store names (add new, edit, save)
-  2. Run rebate folder operations (rename stores, add year suffix, delete rows)
-  3. Convert legacy XLS to XLSX format
-  4. All in one consistent UI with GFH branding
+GFH Rebate Folder Tools — Professional Edition
+==============================================
+Complete rebate processing suite with:
+  • Store management (add/edit/delete stores dynamically)
+  • Rebate operations (rename, add/remove year suffix, delete rows)
+  • XLS to XLSX conversion
+  • Professional UI with tabs, logging, and GFH branding
 
 Developed by Abad Umair Channa © 2026
 """
@@ -14,12 +14,12 @@ Developed by Abad Umair Channa © 2026
 import os
 import sys
 import json
-import time
 import subprocess
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from pathlib import Path
 import threading
+import re
 
 # ── Auto-install required packages ──────────────────────────────────────────
 def _pip_install(pkg_name):
@@ -34,7 +34,6 @@ for _pkg, _pip in [
     ("xlwt", "xlwt"),
     ("xlutils", "xlutils"),
     ("pillow", "pillow"),
-    ("pywin32", "pywin32"),
 ]:
     try:
         __import__(_pkg)
@@ -357,41 +356,241 @@ class RebateToolsApp:
         self.log(f"✓ Theme: {'Dark' if self.is_dark else 'Light'}")
 
     def build_ui(self):
-        """Build the main UI"""
-        # Header
-        header = tk.Frame(self.root, bg=BRAND_NAVY, height=80)
+        """Build professional 4-tab UI"""
+        # ── HEADER ──
+        header = tk.Frame(self.root, bg=BRAND_NAVY, height=100)
         header.pack(fill=tk.X)
         header.pack_propagate(False)
         
+        # Logo + Title
+        logo_title = tk.Frame(header, bg=BRAND_NAVY)
+        logo_title.pack(fill=tk.X, padx=20, pady=10)
+        
+        # Try to load logo image
+        try:
+            from PIL import Image, ImageTk
+            logo_files = ["GFH_Telecom_Logo.png", "logo.png"]
+            for logo_file in logo_files:
+                if os.path.exists(logo_file):
+                    img = Image.open(logo_file)
+                    img.thumbnail((80, 50), Image.Resampling.LANCZOS)
+                    photo = ImageTk.PhotoImage(img)
+                    logo_label = tk.Label(logo_title, image=photo, bg=BRAND_NAVY)
+                    logo_label.image = photo
+                    logo_label.pack(side=tk.LEFT, padx=(0, 15))
+                    break
+        except Exception:
+            pass
+        
+        # Title text
         tk.Label(
-            header,
-            text="GFH REBATE TOOLS SUITE",
-            font=("Segoe UI", 18, "bold"),
-            fg=BRAND_WHITE,
+            logo_title,
+            text="GFH Telecom LLC",
+            font=("Segoe UI", 20, "bold"),
+            fg=BRAND_RED,
             bg=BRAND_NAVY
-        ).pack(pady=10)
+        ).pack(side=tk.LEFT)
         
         tk.Label(
-            header,
-            text="Integrated rebate processing: store management, file operations, format conversion",
-            font=("Segoe UI", 9),
-            fg="#c9ceda",
+            logo_title,
+            text="Rebate Folder Tools",
+            font=("Segoe UI", 14, "bold"),
+            fg="#ffffff",
             bg=BRAND_NAVY
-        ).pack()
+        ).pack(side=tk.LEFT, padx=20)
         
-        # Main container
-        main = ttk.Frame(self.root)
-        main.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        # ── NOTEBOOK (TABS) ──
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Notebook tabs
-        self.notebook = ttk.Notebook(main)
-        self.notebook.pack(fill=tk.BOTH, expand=True)
+        # Tab 1: Operations
+        self.build_tab_operations()
         
-        self.build_tab_stores()
-        self.build_tab_rebate()
-        self.build_tab_convert()
-        self.build_tab_log()
+        # Tab 2: Store Management
+        self.build_tab_store_management()
+        
+        # Tab 3: Settings
+        self.build_tab_settings()
+        
+        # Tab 4: Logs
+        self.build_tab_logs()
     
+    def build_tab_operations(self):
+        """Rebate operations tab"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="  Rebate Operations  ")
+        
+        # Folder selection
+        folder_frame = ttk.LabelFrame(frame, text="Select Rebate Folder", padding=15)
+        folder_frame.pack(fill=tk.X, padx=15, pady=10)
+        
+        btn_frame = ttk.Frame(folder_frame)
+        btn_frame.pack(fill=tk.X)
+        
+        ttk.Button(btn_frame, text="📁 Browse", command=self.select_folder).pack(side=tk.LEFT, padx=5)
+        self.folder_label = ttk.Label(btn_frame, text="No folder selected", foreground="#7a8a99")
+        self.folder_label.pack(side=tk.LEFT, padx=10, fill=tk.X, expand=True)
+        
+        # Operations checkboxes
+        ops_frame = ttk.LabelFrame(frame, text="Select Operations", padding=15)
+        ops_frame.pack(fill=tk.X, padx=15, pady=10)
+        
+        self.op_rename = tk.BooleanVar(value=True)
+        self.op_add_year = tk.BooleanVar(value=True)
+        self.op_remove_2025 = tk.BooleanVar(value=True)
+        self.op_convert = tk.BooleanVar(value=False)
+        
+        ttk.Checkbutton(ops_frame, text="1. Store Rename", variable=self.op_rename).pack(anchor=tk.W, pady=5)
+        ttk.Checkbutton(ops_frame, text="2. Add '2026' Suffix", variable=self.op_add_year).pack(anchor=tk.W, pady=5)
+        ttk.Checkbutton(ops_frame, text="3. Delete 2025 Rows", variable=self.op_remove_2025).pack(anchor=tk.W, pady=5)
+        ttk.Checkbutton(ops_frame, text="4. Convert XLS → XLSX", variable=self.op_convert).pack(anchor=tk.W, pady=5)
+        
+        # Options frame
+        opts_frame = ttk.LabelFrame(frame, text="Step 4 Options (XLS Conversion)", padding=15)
+        opts_frame.pack(fill=tk.X, padx=15, pady=10)
+        
+        self.opt_subfolders = tk.BooleanVar(value=True)
+        self.opt_overwrite = tk.BooleanVar(value=False)
+        self.opt_delete_orig = tk.BooleanVar(value=False)
+        
+        ttk.Checkbutton(opts_frame, text="Include subfolders", variable=self.opt_subfolders).pack(anchor=tk.W, pady=3)
+        ttk.Checkbutton(opts_frame, text="Overwrite existing .xlsx", variable=self.opt_overwrite).pack(anchor=tk.W, pady=3)
+        ttk.Checkbutton(opts_frame, text="Delete original .xls", variable=self.opt_delete_orig).pack(anchor=tk.W, pady=3)
+        
+        # Action buttons
+        action_frame = ttk.Frame(frame)
+        action_frame.pack(fill=tk.X, padx=15, pady=15)
+        
+        ttk.Button(action_frame, text="▶ RUN ALL STEPS", command=self.run_all).pack(side=tk.LEFT, padx=5)
+        ttk.Button(action_frame, text="Step 1 Only", command=lambda: self.run_step(1)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(action_frame, text="Step 2 Only", command=lambda: self.run_step(2)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(action_frame, text="Step 3 Only", command=lambda: self.run_step(3)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(action_frame, text="Step 4 Only", command=lambda: self.run_step(4)).pack(side=tk.LEFT, padx=5)
+    
+    def build_tab_store_management(self):
+        """Store management tab"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="  Store Management  ")
+        
+        info_label = ttk.Label(
+            frame,
+            text="Add, edit, or delete store rename rules. Changes are saved automatically.",
+            foreground="#7a8a99"
+        )
+        info_label.pack(padx=15, pady=10)
+        
+        # Treeview
+        tree_frame = ttk.Frame(frame)
+        tree_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
+        
+        cols = ("Old Name", "New Name")
+        self.stores_tree = ttk.Treeview(tree_frame, columns=cols, height=15, show="headings")
+        self.stores_tree.column("Old Name", width=300)
+        self.stores_tree.column("New Name", width=300)
+        self.stores_tree.heading("Old Name", text="Old Name (find in filenames)")
+        self.stores_tree.heading("New Name", text="New Name (replace with)")
+        self.stores_tree.pack(fill=tk.BOTH, expand=True)
+        
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.stores_tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.stores_tree.configure(yscrollcommand=scrollbar.set)
+        
+        self.refresh_stores_tree()
+        
+        # Buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill=tk.X, padx=15, pady=15)
+        
+        ttk.Button(btn_frame, text="➕ Add Store", command=self.add_store).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="✏️ Edit Selected", command=self.edit_store).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="✕ Delete Selected", command=self.delete_store).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="💾 Save Changes", command=self.save_stores).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="↻ Reset to Defaults", command=self.reset_stores).pack(side=tk.LEFT, padx=5)
+    
+    def build_tab_settings(self):
+        """Settings tab"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="  Settings  ")
+        
+        info = ttk.Label(
+            frame,
+            text="Configure application settings and behavior",
+            foreground="#7a8a99"
+        )
+        info.pack(padx=15, pady=10)
+        
+        # Settings
+        settings_frame = ttk.LabelFrame(frame, text="General Settings", padding=15)
+        settings_frame.pack(fill=tk.X, padx=15, pady=10)
+        
+        # Store config location
+        config_frame = ttk.Frame(settings_frame)
+        config_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(config_frame, text="Store config location:").pack(side=tk.LEFT)
+        ttk.Label(config_frame, text=str(STORE_CONFIG_FILE), foreground="#5a8acc").pack(side=tk.LEFT, padx=10)
+        
+        # Version
+        version_frame = ttk.Frame(settings_frame)
+        version_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(version_frame, text="App version:").pack(side=tk.LEFT)
+        ttk.Label(version_frame, text="1.0.0", foreground="#5a8acc").pack(side=tk.LEFT, padx=10)
+        
+        # Help text
+        help_frame = ttk.LabelFrame(frame, text="Help", padding=15)
+        help_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
+        
+        help_text = tk.Text(help_frame, height=12, width=70, wrap=tk.WORD, bg="#f6f7fb")
+        help_text.pack(fill=tk.BOTH, expand=True)
+        
+        help_text.insert(tk.END, """REBATE FOLDER TOOLS - User Guide
+
+Step 1: Store Rename
+Renames files based on configured store mapping rules.
+Example: "Eliff" → "E Iliff"
+
+Step 2: Add '2026' Suffix
+Adds " 2026" suffix to Excel files that don't have a year.
+Example: "Store Report" → "Store Report 2026"
+
+Step 3: Delete 2025 Rows
+Removes rows containing "2025" from XLS files.
+Keeps all 2026 data intact.
+
+Step 4: Convert XLS → XLSX
+Converts legacy Excel files (.xls) to modern format (.xlsx).
+Options:
+  • Include subfolders: Process folders recursively
+  • Overwrite existing: Replace existing XLSX files
+  • Delete original: Remove .xls after conversion
+
+Store Management:
+Add or edit store rename rules. All changes are saved to:
+~/.gfh_rebate_stores.json""")
+        help_text.config(state=tk.DISABLED)
+    
+    def build_tab_logs(self):
+        """Logs tab"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="  Logs  ")
+        
+        self.log_text = scrolledtext.ScrolledText(
+            frame,
+            height=20,
+            width=100,
+            font=("Consolas", 9),
+            bg="#0f1830",
+            fg="#e2e8f0"
+        )
+        self.log_text.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill=tk.X, padx=15, pady=10)
+        
+        ttk.Button(btn_frame, text="Clear", command=self.clear_log).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Copy", command=self.copy_log).pack(side=tk.LEFT, padx=5)
     def build_tab_stores(self):
         """Store Management Tab"""
         frame = ttk.Frame(self.notebook)
