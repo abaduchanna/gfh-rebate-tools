@@ -16,7 +16,12 @@ Runs four operations in sequence (each can be toggled on/off):
 Ship this file together with gfh_icon_white.ico and GFH_Telecom_Logo.png
 in the same folder for the window/taskbar icon and header logo.
 
-Developed by Abad Umair Channa | Copyright © 2026 | All rights reserved.executable would spawn another
+Developed by Abad Umair Channa | Copyright © 2026 | All rights reserved.
+"""
+
+def _maybe_ensure_package(pkg_name: str) -> None:
+    """Auto-install missing dependencies if running from .exe (frozen)."""
+    # Don't auto-pip from frozen executables during startup — executing pip
     # instance of the app itself (window flooding).
     if getattr(sys, "frozen", False):
         return
