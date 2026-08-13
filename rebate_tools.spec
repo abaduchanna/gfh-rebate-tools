@@ -16,6 +16,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('gfh_icon.ico', '.'),
+        ('gfh_icon_white.ico', '.'),
         ('gfh_icon.png', '.'),
         ('gfh_wordmark.png', '.'),
         ('GFH_Telecom_Logo.png', '.'),
