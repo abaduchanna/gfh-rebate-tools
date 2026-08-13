@@ -19,7 +19,6 @@ a = Analysis(
         ('gfh_app_icon_new.ico', '.'),
         ('gfh_icon.ico', '.'),
         ('gfh_icon.png', '.'),
-        ('gfh_icon_white.ico', '.'),
         ('gfh_wordmark.png', '.'),
         ('stores.json', '.'),
         ('theme_manager.py', '.'),
