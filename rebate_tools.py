@@ -557,7 +557,7 @@ class App:
         root.configure(bg=LIGHT)
         _set_window_icon(root)
 
-        self.theme_manager = ThemeManager("GFH Rebate Folder Tools")
+        self.theme_manager = ThemeManager("GFH Rebate Folder Tools", app_name="gfh-rebate-tools")
         self._styles()
         self._header()
         self._body()
