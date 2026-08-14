@@ -32,6 +32,8 @@ import queue
 import traceback
 import tkinter as tk
 from theme_manager import ThemeManager, apply_theme_to_window, get_copyright_year, create_theme_toggle_button
+from header_manager import FixedHeaderManager
+from logo_handler import LogoHandler
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from pathlib import Path
 from datetime import datetime
@@ -628,52 +630,9 @@ class App:
         except Exception:
             pass
     def _header(self):
-        hdr = tk.Frame(self.root, bg=NAVY, height=108)
-        hdr.pack(fill="x")
-        hdr.pack_propagate(False)
-        hdr._tag = "header"
+        """Header using FixedHeaderManager."""
+        self.header_mgr = FixedHeaderManager(self.root, title="GFH Rebate Folder Tools")
 
-
-        hdr.bind("<Enter>", lambda e, w=hdr: w.configure(bg=NAVY))
-        hdr.bind("<Leave>", lambda e, w=hdr: w.configure(bg=NAVY))
-        # Logo on the left — load GFH_Telecom_Logo.png next to this script,
-        # composite on NAVY (so transparent regions render correctly), and
-        # thumbnail to 260x82 (same recipe as the Aging Processor).
-        logo_path = _resource_path(LOGO_PNG_NAME)
-        if os.path.exists(logo_path) and _PI is not None:
-            try:
-                img = _PI.open(logo_path).convert("RGBA")
-                bg2 = _PI.new("RGBA", img.size, (9, 13, 38, 255))
-                bg2.paste(img, mask=img.split()[3])
-                img = bg2.convert("RGB")
-                img.thumbnail((260, 82), _PI.Resampling.LANCZOS)
-                self._logo_img = _PIT.PhotoImage(img)
-            except Exception:
-                self._logo_img = None
-
-        lf = tk.Frame(hdr, bg=NAVY)
-        lf.place(relx=0, rely=0.5, anchor="w", x=24)
-        lf._tag = "header"
-        if self._logo_img:
-            tk.Label(lf, image=self._logo_img, bg=NAVY).pack()
-        else:
-            tk.Label(lf, text="GFH TELECOM", font=("Segoe UI", 16, "bold"),
-                     fg=RED, bg=NAVY).pack()
-
-        tf = tk.Frame(hdr, bg=NAVY)
-        tf.place(relx=0.5, rely=0.5, anchor="center")
-        tf._tag = "header"
-        tk.Label(tf, text="REBATE FOLDER TOOLS",
-                 font=("Segoe UI", 18, "bold"), fg=WHITE, bg=NAVY).pack()
-        tk.Label(tf, text="Rename · Suffix · Delete 2025 · Convert Legacy Excel",
-                 font=("Segoe UI", 9), fg=WHITE, bg=NAVY).pack()
-
-        theme_btn = create_theme_toggle_button(hdr, self.theme_manager, on_toggle=self._apply_theme)
-        theme_btn.place(relx=0.98, rely=0.5, anchor="e")
-
-        self._lock_header_colors(hdr, NAVY)
-
-        self._lock_header_colors(hdr, NAVY)
 
     def _apply_theme(self, colors=None):
         apply_theme_to_window(self.root, self.theme_manager)
