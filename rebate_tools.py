@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime as _doc_dt
 _DOC_YEAR = _doc_dt.date.today().year
 
