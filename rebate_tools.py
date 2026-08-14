@@ -37,7 +37,7 @@ except ImportError:
     import sys
     print("ERROR: tkinter is not available. Install Python from python.org (not Microsoft Store).")
     sys.exit(1)
-from theme_manager import ThemeManager, apply_theme_to_window, get_copyright_year, create_theme_toggle_button
+from theme_manager import ThemeManager, apply_theme_to_window, get_copyright_year
 from header_manager import FixedHeaderManager
 from logo_handler import LogoHandler
 from tkinter import ttk, filedialog, scrolledtext, messagebox
