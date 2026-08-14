@@ -587,14 +587,14 @@ class App:
     def _styles(self):
         s = ttk.Style(); s.theme_use("clam")
         s.configure("Run.TButton", background=RED, foreground=WHITE,
-                    font=("Calibri", 11, "bold"), padding=(16, 9), borderwidth=0)
+                    font=("Segoe UI", 11, "bold"), padding=(16, 9), borderwidth=0)
         s.map("Run.TButton",
               background=[("active", "#c01820"), ("disabled", "#aaa")])
         s.configure("Browse.TButton", background=NAVY, foreground=WHITE,
-                    font=("Calibri", 10), padding=(10, 6), borderwidth=0)
+                    font=("Segoe UI", 10), padding=(10, 6), borderwidth=0)
         s.map("Browse.TButton", background=[("active", "#1a2550")])
         s.configure("Cancel.TButton", background="#1a2550", foreground=WHITE,
-                    font=("Calibri", 10), padding=(10, 6), borderwidth=0)
+                    font=("Segoe UI", 10), padding=(10, 6), borderwidth=0)
         s.map("Cancel.TButton", background=[("active", "#2a3560")])
         s.configure("Accent.Horizontal.TProgressbar",
                     troughcolor="#dde6f0", background=RED, borderwidth=0)
@@ -657,16 +657,16 @@ class App:
         if self._logo_img:
             tk.Label(lf, image=self._logo_img, bg=NAVY).pack()
         else:
-            tk.Label(lf, text="GFH TELECOM", font=("Calibri", 16, "bold"),
+            tk.Label(lf, text="GFH TELECOM", font=("Segoe UI", 16, "bold"),
                      fg=RED, bg=NAVY).pack()
 
         tf = tk.Frame(hdr, bg=NAVY)
         tf.place(relx=0.5, rely=0.5, anchor="center")
         tf._tag = "header"
         tk.Label(tf, text="REBATE FOLDER TOOLS",
-                 font=("Calibri", 18, "bold"), fg=WHITE, bg=NAVY).pack()
+                 font=("Segoe UI", 18, "bold"), fg=WHITE, bg=NAVY).pack()
         tk.Label(tf, text="Rename · Suffix · Delete 2025 · Convert Legacy Excel",
-                 font=("Calibri", 9), fg=WHITE, bg=NAVY).pack()
+                 font=("Segoe UI", 9), fg=WHITE, bg=NAVY).pack()
 
         theme_btn = create_theme_toggle_button(hdr, self.theme_manager, on_toggle=self._apply_theme)
         theme_btn.place(relx=0.98, rely=0.5, anchor="e")
@@ -689,7 +689,7 @@ class App:
         row.columnconfigure(0, weight=1)
         self.folder_var = tk.StringVar(value="")
         tk.Entry(row, textvariable=self.folder_var,
-                 font=("Calibri", 9), relief="flat", bg="#e8eff8", fg=NAVY,
+                 font=("Segoe UI", 9), relief="flat", bg="#e8eff8", fg=NAVY,
                  readonlybackground="#e8eff8",
                  highlightbackground="#b0c4de", highlightthickness=1
                  ).grid(row=0, column=0, sticky="ew", ipady=5, padx=(0, 8))
@@ -712,31 +712,31 @@ class App:
             tk.Checkbutton(opts, text=label, variable=var,
                            bg=LIGHT, fg=NAVY, selectcolor=WHITE,
                            activebackground=LIGHT, activeforeground=NAVY,
-                           font=("Calibri", 10)).pack(side="left", padx=(0, 16))
+                           font=("Segoe UI", 10)).pack(side="left", padx=(0, 16))
 
         # ── Year/Suffix entry fields (Step 2 suffix + Step 3 year) ───────────
         yr_row = tk.Frame(body, bg=LIGHT)
         yr_row.pack(fill="x", pady=(0, 10))
         tk.Label(yr_row, text="Step 2 — Suffix to add:",
-                 bg=LIGHT, fg="#4a6080", font=("Calibri", 9)).pack(side="left")
+                 bg=LIGHT, fg="#4a6080", font=("Segoe UI", 9)).pack(side="left")
         self.suffix_var = tk.StringVar(value="2026")
         tk.Entry(yr_row, textvariable=self.suffix_var, width=8,
-                 font=("Calibri", 9), relief="flat", bg="#e8eff8", fg=NAVY,
+                 font=("Segoe UI", 9), relief="flat", bg="#e8eff8", fg=NAVY,
                  readonlybackground="#e8eff8",
                  highlightbackground="#b0c4de", highlightthickness=1
                  ).pack(side="left", padx=(6, 20))
         tk.Label(yr_row, text="Step 3 — Year to delete:",
-                 bg=LIGHT, fg="#4a6080", font=("Calibri", 9)).pack(side="left")
+                 bg=LIGHT, fg="#4a6080", font=("Segoe UI", 9)).pack(side="left")
         self.year_var = tk.StringVar(value="2025")
         tk.Entry(yr_row, textvariable=self.year_var, width=8,
-                 font=("Calibri", 9), relief="flat", bg="#e8eff8", fg=NAVY,
+                 font=("Segoe UI", 9), relief="flat", bg="#e8eff8", fg=NAVY,
                  readonlybackground="#e8eff8",
                  highlightbackground="#b0c4de", highlightthickness=1
                  ).pack(side="left", padx=(6, 0))
 
         # ── Store management section (Step 1 rename rules) ───────────────────
         store_frame = tk.LabelFrame(body, text="Store Rename Rules (Step 1)",
-                                    bg=LIGHT, fg=NAVY, font=("Calibri", 9, "bold"),
+                                    bg=LIGHT, fg=NAVY, font=("Segoe UI", 9, "bold"),
                                     relief="flat", highlightbackground="#b0c4de",
                                     highlightthickness=1, padx=8, pady=6)
         store_frame.pack(fill="x", pady=(0, 10))
@@ -761,17 +761,17 @@ class App:
         edit_row = tk.Frame(store_frame, bg=LIGHT)
         edit_row.pack(fill="x", pady=(0, 6))
         tk.Label(edit_row, text="Find:", bg=LIGHT, fg="#4a6080",
-                 font=("Calibri", 9)).pack(side="left")
+                 font=("Segoe UI", 9)).pack(side="left")
         self.new_old_var = tk.StringVar()
         tk.Entry(edit_row, textvariable=self.new_old_var, width=22,
-                 font=("Calibri", 9), relief="flat", bg="#e8eff8", fg=NAVY,
+                 font=("Segoe UI", 9), relief="flat", bg="#e8eff8", fg=NAVY,
                  highlightbackground="#b0c4de", highlightthickness=1
                  ).pack(side="left", padx=(4, 12))
         tk.Label(edit_row, text="Replace:", bg=LIGHT, fg="#4a6080",
-                 font=("Calibri", 9)).pack(side="left")
+                 font=("Segoe UI", 9)).pack(side="left")
         self.new_new_var = tk.StringVar()
         tk.Entry(edit_row, textvariable=self.new_new_var, width=22,
-                 font=("Calibri", 9), relief="flat", bg="#e8eff8", fg=NAVY,
+                 font=("Segoe UI", 9), relief="flat", bg="#e8eff8", fg=NAVY,
                  highlightbackground="#b0c4de", highlightthickness=1
                  ).pack(side="left", padx=(4, 12))
         ttk.Button(edit_row, text="+ Add", style="Browse.TButton",
@@ -798,7 +798,7 @@ class App:
             tk.Checkbutton(sub, text=txt, variable=var,
                            bg=LIGHT, fg="#4a6080", selectcolor=WHITE,
                            activebackground=LIGHT, activeforeground=NAVY,
-                           font=("Calibri", 9)).pack(side="left", padx=(0, 14))
+                           font=("Segoe UI", 9)).pack(side="left", padx=(0, 14))
 
         # Run + Cancel buttons
         act = tk.Frame(body, bg=LIGHT)
@@ -813,7 +813,7 @@ class App:
         self.cancel_btn.pack(side="left", padx=8)
         self.status_var = tk.StringVar(value="Ready.")
         tk.Label(act, textvariable=self.status_var, bg=LIGHT, fg=NAVY,
-                 font=("Calibri", 9)).pack(side="left", padx=12)
+                 font=("Segoe UI", 9)).pack(side="left", padx=12)
 
         # Progress bar
         self.progress = ttk.Progressbar(body, mode="indeterminate",
@@ -821,7 +821,7 @@ class App:
         self.progress.pack(fill="x", pady=(0, 10))
 
         # Log
-        tk.Label(body, text="Activity Log", font=("Calibri", 9, "bold"),
+        tk.Label(body, text="Activity Log", font=("Segoe UI", 9, "bold"),
                  fg=NAVY, bg=LIGHT).pack(anchor="w")
         self.log_box = scrolledtext.ScrolledText(
             body, height=12, font=("Consolas", 8),
@@ -833,7 +833,7 @@ class App:
         bar = tk.Frame(self.root, bg=NAVY, height=26)
         bar.pack(fill="x", side="bottom"); bar.pack_propagate(False)
         tk.Label(bar, text=COPYRIGHT_TEXT, bg=NAVY, fg="#9d9db8",
-                 font=("Calibri", 8)).pack(pady=4)
+                 font=("Segoe UI", 8)).pack(pady=4)
 
     # ── helpers ────────────────────────────────────────────────────────────
     def _browse(self):
