@@ -41,7 +41,7 @@ from header_manager import FixedHeaderManager
 from logo_handler import LogoHandler
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
 
 # ── Auto-install required packages BEFORE importing them ──────────────────
 def _pip_install(pkg_name):
