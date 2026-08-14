@@ -635,8 +635,12 @@ class App:
         except Exception:
             pass
     def _header(self):
-        """Header using FixedHeaderManager."""
+        """Header using FixedHeaderManager with logo."""
         self.header_mgr = FixedHeaderManager(self.root, title="GFH Rebate Folder Tools")
+        # Load the GFH logo into the header
+        _logo_path = _resource_path(LOGO_PNG_NAME)
+        if os.path.exists(_logo_path):
+            self.header_mgr.set_logo(logo_path=_logo_path, text="GFH")
 
 
     def _apply_theme(self, colors=None):
