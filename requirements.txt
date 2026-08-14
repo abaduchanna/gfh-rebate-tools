@@ -1,6 +1,7 @@
+# Standardized requirements for GFH/VidaPay applications
+# Developed by Abad Umair Channa
+
+pillow>=10.0.0
 openpyxl>=3.1.0
-xlrd==1.2.0
-xlwt>=1.3.0
-xlutils>=2.0.0
-Pillow>=9.0.0
-pywin32>=300
+pandas>=2.0.0
+requests>=2.31.0
