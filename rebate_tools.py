@@ -43,6 +43,8 @@ from logo_handler import LogoHandler
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from pathlib import Path
 from datetime import datetime, date
+import base64
+import tempfile
 
 # ── Auto-install required packages BEFORE importing them ──────────────────
 def _pip_install(pkg_name):
