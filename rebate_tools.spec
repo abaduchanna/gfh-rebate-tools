@@ -28,7 +28,6 @@ a = Analysis(
     hiddenimports=[
         'tkinter',
         '_tkinter',
-        'tkinter._fix',
         'openpyxl',
         'xlrd',
         'xlwt',
