@@ -665,19 +665,18 @@ class App:
                 colors = self.theme_manager.get_colors()
             except Exception:
                 return
-        apply_theme_to_window(self.root, self.theme_manager)
-        try:
-            self.root.configure(bg=colors.get("bg", "#f6f7fb"))
-        except Exception:
-            pass
-        # Walk all widgets and apply colors, but SKIP header widgets
+        # DON'T call apply_theme_to_window — it changes ALL widgets including header
+        # Do our own walk so we can skip protected (header) widgets
         _PROTECTED = {"header", "header_label", "brand", "logo", "run", "sched", "stop"}
+        _NAVY = "#090d26"
+        _WHITE = "#ffffff"
         def _walk(widget):
             try:
                 tag = getattr(widget, "_tag", None)
                 if tag not in _PROTECTED:
                     bg = colors.get("bg", "#f6f7fb")
                     fg = colors.get("text", "#16213a")
+                    panel = colors.get("panel", "#ffffff")
                     if isinstance(widget, tk.Frame):
                         widget.configure(bg=bg)
                     elif isinstance(widget, tk.Label):
@@ -686,11 +685,22 @@ class App:
                         widget.configure(bg=colors.get("input", "#ffffff"), fg=fg)
                     elif isinstance(widget, tk.Button):
                         widget.configure(bg=bg, fg=fg)
+                    elif isinstance(widget, tk.Text):
+                        widget.configure(bg=colors.get("log_bg", "#0f1830"), fg=colors.get("log_fg", "#e2e8f0"))
                 for child in widget.winfo_children():
                     _walk(child)
             except Exception:
                 pass
         _walk(self.root)
+        # Also configure ttk styles
+        try:
+            style = ttk.Style(self.root)
+            style.configure("TFrame", background=colors.get("bg", "#f6f7fb"))
+            style.configure("TLabel", background=colors.get("bg", "#f6f7fb"), foreground=colors.get("text", "#16213a"))
+            style.configure("TButton", background=colors.get("panel_alt", "#eef0f6"), foreground=colors.get("text", "#16213a"))
+            style.configure("TEntry", fieldbackground=colors.get("input", "#ffffff"), background=colors.get("bg", "#f6f7fb"))
+        except Exception:
+            pass
 
 
     def _body(self):
