@@ -640,19 +640,21 @@ class App:
     def _header(self):
         """Header using FixedHeaderManager with logo + theme toggle."""
         self.header_mgr = FixedHeaderManager(self.root, title="GFH Rebate Folder Tools")
-        # Tag header frame as protected (immune to theme toggle)
-        if hasattr(self.header_mgr, 'header_frame'):
-            self.header_mgr.header_frame._tag = "header"
-            for child in self.header_mgr.header_frame.winfo_children():
-                child._tag = "header"
-                for grandchild in child.winfo_children():
-                    grandchild._tag = "header_label"
         # Load the GFH logo into the header
         _logo_path = _resource_path(LOGO_PNG_NAME)
         if os.path.exists(_logo_path):
             self.header_mgr.set_logo(logo_path=_logo_path, text="GFH")
         # Add theme toggle button
         self.header_mgr.add_theme_toggle(self.theme_manager, callback=self._apply_theme)
+        # Tag ALL header widgets as protected (AFTER logo + toggle are created)
+        if hasattr(self.header_mgr, 'header_frame'):
+            self.header_mgr.header_frame._tag = "header"
+            for child in self.header_mgr.header_frame.winfo_children():
+                child._tag = "header"
+                for grandchild in child.winfo_children():
+                    grandchild._tag = "header_label"
+                    for great_grandchild in grandchild.winfo_children():
+                        great_grandchild._tag = "header_label"
 
 
     def _apply_theme(self, colors=None):
