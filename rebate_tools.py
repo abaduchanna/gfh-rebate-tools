@@ -647,9 +647,14 @@ class App:
 
 
     def _apply_theme(self, colors=None):
+        """Apply theme colors to all widgets."""
+        if colors is None:
+            colors = self.theme_manager.get_colors()
         apply_theme_to_window(self.root, self.theme_manager)
-
-    # ── body ───────────────────────────────────────────────────────────────
+        try:
+            self.root.configure(bg=colors.get("bg", "#f6f7fb"))
+        except Exception:
+            pass
     def _body(self):
         body = tk.Frame(self.root, bg=LIGHT)
         body.pack(fill="both", expand=True, padx=24, pady=18)
