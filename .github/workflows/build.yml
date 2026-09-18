@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         app:
-          - rebate_tools
+          - gfh_rebate_tools
 
     steps:
       - name: Checkout
