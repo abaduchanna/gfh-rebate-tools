@@ -4,19 +4,19 @@ _year = _dt.date.today().year
 
 SPEC_DOC = f"""PyInstaller spec
 Developed by www.3SVerse.com \u00a9 {_year}
-Build command: pyinstaller gfh_rebate_tools.spec
+Build command: pyinstaller GFH_Rebate_Tools.spec
 """
 
 
 block_cipher = None
 
 a = Analysis(
-    ['gfh_rebate_tools.py'],
+    ['GFH_Rebate_Tools.py'],
     pathex=['.'],
     binaries=[],
     datas=[
         ('assets', 'assets'),
-        ('gfh_icon.ico', '.'),
+        ('GFH_icon.ico', '.'),
         ('GFH_Telecom_Logo.png', '.'),
         ('stores.json', '.'),
         ('theme_manager.py', '.'),
@@ -101,7 +101,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='gfh_rebate_tools',
+    name='GFH_Rebate_Tools',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -113,5 +113,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='gfh_icon.ico',
+    icon='GFH_icon.ico',
 )

@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gfh-rebate-tools"
+name = "GFH-Rebate-Tools"
 version = "1.0.0"
 description = "GFH Rebate Folder Tools"
 requires-python = ">=3.11"
